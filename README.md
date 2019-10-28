@@ -16,7 +16,7 @@ https://github.com/DanMittendorf/alexa-polly-background-mixing-nodejs/
 node.js / ask-sdk v2 を使ったAlexaスキルで使用することができます。Jovoフレームワークや他のフレームワークにも同様にポートできるのではないかと思います。自由にやってください、ただし、参考のためにこのプロジェクトにリンクしてください。
 ```
 
-* 注意！forkして何かしら手を加える場合、本レポジトリのfolk元であるDanielさんのレポジトリURLを明記するようにしてください。*
+**注意！forkして何かしら手を加える場合、本レポジトリのfolk元であるDanielさんのレポジトリURLを明記するようにしてください。**
 
 # セットアップ （一部補足等加えています）
 
@@ -26,11 +26,11 @@ node.js / ask-sdk v2 を使ったAlexaスキルで使用することができま
 
 2. Lambda関数を新規作成。
   - このサンプルでは、東京リージョンを使っています。
-  - ランタイムはNode.js 8.10を選択してください。*Node.js 10.Xでは動きません！ご注意ください！*
-  - fork元では結構色々権限つけてますが(*スクリーションショット #1*)、AWSLambdaBasicExecutionRoleに以下を追加すれば、サンプルではOKだと思います。
+  - ランタイムはNode.js 8.10を選択してください。**Node.js 10.Xでは動きません！ご注意ください！**
+  - fork元では結構色々権限つけてますが(**スクリーションショット #1**)、AWSLambdaBasicExecutionRoleに以下を追加すれば、サンプルではOKだと思います。
     - AmazonS3FullAccess
     - AmazonPollyFullAccess
-  - PollyのMP3生成とBGMとのミックスに時間がかかる場合は、Lambda関数のタイムアウトをデフォルトの3秒から15秒に。(*スクリーンショット #2*)
+  - PollyのMP3生成とBGMとのミックスに時間がかかる場合は、Lambda関数のタイムアウトをデフォルトの3秒から15秒に。(**スクリーンショット #2**)
 
 3. S3バケットを作成
   - https://tech-blog.s-yoshiki.com/2019/01/1052/ を参考に。S３に書き込んだファイルがパブリックアクセス可能にになるようにしておく。
@@ -70,7 +70,7 @@ $ ffmpeg -i 変換前mp3ファイル -ac 2 -codec:a libmp3lame -b:a 48k -ar 2205
     - 第2引数： Pollyの音声の種類。Takumi か Mizuki を指定。
     - 第3引数： 変更不要
   - コード内にコメントが記載されています。完璧ではないかもですが、理解はできると思います。
-  - *注意！ 私のforkで動かない場合はこのレポジトリでissu立ててください。folk元に問い合わせないようにお願いします！*
+  - **注意！ 私のforkで動かない場合はこのレポジトリでissu立ててください。folk元に問い合わせないようにお願いします！**
 
 7. アップロード
   - lambda/custom配下の*.js, node_modules/, audio/ をまとめてZIPファイルにしてlambdaにアップロードしてください
