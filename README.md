@@ -1,36 +1,85 @@
 # alexa-polly-background-mixing-nodejs
-Polly Voice mixing with background music for nodejs ASK-SDK v2
 
-This project is based on npm project lambda-audio: npmjs.com/package/lambda-audio and uses SoX (Sound eXchange) command line tool in an AWS Lambda compiled version.
+Daniel Mittendorfさんによる、ask-sdk v2でPollyの音声をBGMとミックスするPoCをforkして、なるべくかんたんに試せるように、修正・解説を加えました。
+fork元も必ずご覧ください。
+https://github.com/DanMittendorf/alexa-polly-background-mixing-nodejs/
 
-But I had to edit the npm lambda-audio package at two locations. See below #6! This is important!
+以下、fork元の説明より。
 
-It allows you to generate Amazon Polly Voices in different languages mixed with background music / sounds. 
+```
+このプロジェクトは、lambda-audio: npmjs.com/package/lambda-audio を元に、AWS Lambda向けにコンパイルされたバージョンのSoX (Sound eXchange) のコマンドラインツールを使っています。
 
-This can be used in any Amazon Alexa skill that is written in node.js / ASK-SDK v2. Can probably be ported to Jovo Framework or other frameworks as well. Feel free to do so, but please link to this project for reference!
+ただし、lambda-audioパッケージの2箇所で修正が必要でした。詳細は下記の#5をご覧ください。重要です！
 
-# Set things up
-1. Create a new skill in the Alexa Developer Console
+これにより、BGMやサウンドとミックスした異なる言語のPolly音声を生成することができます。
 
--> https://developer.amazon.com/alexa/console/ask
+node.js / ask-sdk v2 を使ったAlexaスキルで使用することができます。Jovoフレームワークや他のフレームワークにも同様にポートできるのではないかと思います。自由にやってください、ただし、参考のためにこのプロジェクトにリンクしてください。
+```
 
-2. Create a new Lambda Function. Make sure lambda function has execution / access rights for Polly, S3, (basic: DynamoDB for Persistant Storage, Cloudwatch for log files) (*see screenshot #1*)
+* 注意！forkして何かしら手を加える場合、本レポジトリのfolk元であるDanielさんのレポジトリURLを明記するようにしてください。*
 
--> https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/functions
+# セットアップ （一部補足等加えています）
 
--> create a role here: https://console.aws.amazon.com/iam/home?#/roles make sure to add AmazonS3FullAccess and AmazonPollyFullAccess!
+1. Alexa開発者コンソールでスキルを新規作成
+  - models/ja-JP.jsonでモデルを作成
+  - lambda関数作成後にエンドポイントを設定する
 
-3. Lambda Function Timeout set to 15 seconds as in some edge cases it might take longer than default 3 seconds to generate polly and mix with background (*see screenshot #2*)
+2. Lambda関数を新規作成。
+  - このサンプルでは、東京リージョンを使っています。
+  - ランタイムはNode.js 8.10を選択してください。*Node.js 10.Xでは動きません！ご注意ください！*
+  - fork元では結構色々権限つけてますが(*スクリーションショット #1*)、AWSLambdaBasicExecutionRoleに以下を追加すれば、サンプルではOKだと思います。
+    - AmazonS3FullAccess
+    - AmazonPollyFullAccess
+  - PollyのMP3生成とBGMとのミックスに時間がかかる場合は、Lambda関数のタイムアウトをデフォルトの3秒から15秒に。(*スクリーンショット #2*)
 
-4. Put your background music in lambda/function/audio folder. It has to be the same format as polly, so 48kb/s 22050 hz. Use "Lame XP" or other tools like ffmpeg
+3. S3バケットを作成
+  - https://tech-blog.s-yoshiki.com/2019/01/1052/ を参考に。S３に書き込んだファイルがパブリックアクセス可能にになるようにしておく。
+  - CORS設定も忘れないこと。
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+<CORSRule>
+    <AllowedOrigin>http://ask-ifr-download.s3.amazonaws.com</AllowedOrigin>
+    <AllowedMethod>GET</AllowedMethod>
+</CORSRule>
+<CORSRule>
+    <AllowedOrigin>https://ask-ifr-download.s3.amazonaws.com</AllowedOrigin>
+    <AllowedMethod>GET</AllowedMethod>
+</CORSRule>
+</CORSConfiguration>
+```
 
-5. node-module required lambda-audio (I edited /lib/lambda-audio.js in line 15 and 36 to use binary from /tmp/ folder and not /bin/ folder because /bin/ folder has not execution rights, tmp folder does have +x)
+4. BGMのMP3ファイルを lambda/custom/audioに配置. Pollyと同じ, 48kb/s 22050 hzにすること. "Lame XP"やffmpegなどを使ってください。
+  - ffmpegはこんな感じ
+```
+$ ffmpeg -i 変換前mp3ファイル -ac 2 -codec:a libmp3lame -b:a 48k -ar 22050 -af volume=-20dB -write_xing 0 変更後mp3ファイル
+```
+  - ボリューム少し下げてます、Pollyの声が聞こえなくなるので。
 
-6. Pull this PoC Skill and try it out! Code is documented. I know it's not perfect, but I think everyone will understand it. If not, always feel free to get in touch: daniel@digivoice.io or https://twitter.com/DanMittendorf
+5. nodeモジュール lambda-audioについて
+  - node_modulesはこのレポジトリのものをそのまま使えばOKです。npm i叩く必要ありません。cloneしたものをそのままアップロードすればOKです。
+  - /lib/lambda-audio.js の15行目、36行目で修正が入っています。これは/bin/には実行権がなく、/tmp/にバイナリを配置し、実行権を付与するためです。
 
-7. You could also use ask-cli to deploy this code pretty easy. ;-)
+6. git cloneして以下を修正
+  - 14行目、S3バケット名を指定してください。
+  - 18行目、BGMとなるオーディオファイルのファイル名を指定してください。（サンプルのオーディオファイルが用意されてますのでそのまま使ってもOK）
+  - 156行目、generatePollyUrlのところが発話になります
+    - 第1引数： PollyにわたすSSMLになります。
+      - ```<speak>```と```</speak>```で囲まれた部分を変更すると発話内容が変わります。
+      - ここでさらにaudioタグを使うことはできませんのでご注意ください。
+    - 第2引数： Pollyの音声の種類。Takumi か Mizuki を指定。
+    - 第3引数： 変更不要
+  - コード内にコメントが記載されています。完璧ではないかもですが、理解はできると思います。
+  - *注意！ 私のforkで動かない場合はこのレポジトリでissu立ててください。folk元に問い合わせないようにお願いします！*
 
-# Screenshots for reference
+7. アップロード
+  - lambda/custom配下の*.js, node_modules/, audio/ をまとめてZIPファイルにしてlambdaにアップロードしてください
+  - ファイルサイズが大きくなるのでS３からのアップロード推奨
+
+8. ask-cli使うともっとかんたんにデプロイできるそうです
+
+# 参考までにスクリーンショット
+
 <img width="400" alt="setup #1 permissions" src="https://digivoice.io/wp-content/uploads/2019/04/setup-things.jpg"/>
 <img width="400" alt="setup #2 timeout" src="https://digivoice.io/wp-content/uploads/2019/04/setup-things_2.jpg"/>
 

@@ -1,12 +1,8 @@
 {
   "interactionModel": {
     "languageModel": {
-      "invocationName": "proof of concept",
+      "invocationName": "桃太郎の話",
       "intents": [
-        {
-          "name": "AMAZON.FallbackIntent",
-          "samples": []
-        },
         {
           "name": "AMAZON.CancelIntent",
           "samples": []
@@ -27,9 +23,9 @@
           "name": "PoCIntent",
           "slots": [],
           "samples": [
-            "open proof of concept",
-            "launch proof of concept",
-            "start proof of concept"
+            "桃太郎の話を開いて",
+            "桃太郎の話を起動して",
+            "桃太郎の話をスタートして"
           ]
         }
       ],
