@@ -77,7 +77,7 @@ const writeAudioStreamToS3Bucket = ( audioStream, filename ) =>
     return {
       msg: 'File successfully generated.',
       ETag: res.ETag,
-      url: `https://s3-ap-northeast-1.amazonaws.com/${myBucket}/${filename}`
+      url: `https://s3-${myRegion}.amazonaws.com/${myBucket}/${filename}`
     }
   }
 });
